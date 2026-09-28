@@ -1,0 +1,18 @@
+# Entorno
+.venv/
+__pycache__/
+*.pyc
+.pytest_cache/
+.ipynb_checkpoints/
+
+# Datos: se descargan con `uv run nyc-taxi-ops descargar`
+data/raw/*
+data/processed/*
+!data/raw/.gitkeep
+!data/processed/.gitkeep
+*.part
+
+# Sistema
+.DS_Store
+Thumbs.db
+desktop.ini

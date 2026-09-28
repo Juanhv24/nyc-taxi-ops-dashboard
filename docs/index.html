@@ -1,0 +1,277 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Taxis NYC · Operación e integridad tarifaria</title>
+  <meta name="description" content="Tablero de demanda, auditoría tarifaria y calidad de datos sobre 9.7 millones de viajes de taxis amarillos de Nueva York (enero de 2017).">
+  <link rel="stylesheet" href="assets/styles.css">
+  <script src="assets/vendor/echarts.min.js" defer></script>
+  <script type="module" src="assets/js/app.js"></script>
+</head>
+<body>
+  <header class="encabezado">
+    <div class="contenedor">
+      <p class="antetitulo">Taxis amarillos de Nueva York · <span data-periodo>Enero de 2017</span></p>
+      <h1>Operación e integridad tarifaria</h1>
+      <p class="entradilla">Dónde y cuándo se concentra la demanda, qué viajes no cuadran con el tarifario y qué tan confiables son los datos, a partir de <strong data-kpi="viajes_originales">9.7 millones</strong> de viajes publicados por la NYC Taxi &amp; Limousine Commission.</p>
+      <nav class="pestanas" role="tablist" aria-label="Secciones del tablero">
+        <button role="tab" id="tab-demanda" aria-controls="panel-demanda" aria-selected="true">Demanda y operación</button>
+        <button role="tab" id="tab-integridad" aria-controls="panel-integridad" aria-selected="false" tabindex="-1">Integridad tarifaria</button>
+        <button role="tab" id="tab-calidad" aria-controls="panel-calidad" aria-selected="false" tabindex="-1">Calidad de datos</button>
+        <button role="tab" id="tab-metodologia" aria-controls="panel-metodologia" aria-selected="false" tabindex="-1">Metodología</button>
+      </nav>
+    </div>
+  </header>
+
+  <main class="contenedor">
+    <p class="estado" id="estado" role="status">Cargando datos…</p>
+
+    <!-- ================================================================ -->
+    <section id="panel-demanda" role="tabpanel" aria-labelledby="tab-demanda">
+      <div class="filtros" aria-label="Filtros de la sección">
+        <fieldset class="segmentado" id="filtro-tipo">
+          <legend>Tipo de día</legend>
+          <label><input type="radio" name="tipo" value="Todos" checked><span>Todos</span></label>
+          <label><input type="radio" name="tipo" value="Laborable"><span>Laborable</span></label>
+          <label><input type="radio" name="tipo" value="Fin de semana/festivo"><span>Fin de semana y festivo</span></label>
+        </fieldset>
+        <label class="campo">Franja horaria
+          <select id="filtro-franja"><option value="Todas">Todo el día</option></select>
+        </label>
+        <label class="campo">Distrito de origen
+          <select id="filtro-distrito"><option value="Todos">Todos</option></select>
+        </label>
+        <label class="campo">Métrica
+          <select id="filtro-metrica">
+            <option value="viajes">Viajes por día</option>
+            <option value="ingreso_hora">Ingreso por hora de servicio</option>
+            <option value="velocidad">Velocidad media</option>
+          </select>
+        </label>
+      </div>
+
+      <div class="kpis" id="kpis-demanda"></div>
+      <aside class="lectura" data-lectura="demanda" hidden></aside>
+
+      <div class="rejilla">
+        <figure class="tarjeta ancho-completo" data-grafico="heatmap">
+          <figcaption>
+            <h2>¿Cuándo se concentra la demanda?</h2>
+            <p data-subtitulo>Promedio por día de la semana y hora de recogida. Excluye los festivos del 2 y 16 de enero.</p>
+          </figcaption>
+          <div class="lienzo alto"></div>
+        </figure>
+
+        <figure class="tarjeta" data-grafico="diario">
+          <figcaption>
+            <h2>Comportamiento día a día</h2>
+            <p data-subtitulo>Cada barra es un día de enero; el color distingue laborables de fines de semana y festivos.</p>
+          </figcaption>
+          <div class="lienzo"></div>
+        </figure>
+
+        <figure class="tarjeta" data-grafico="perfil">
+          <figcaption>
+            <h2>Perfil por hora</h2>
+            <p data-subtitulo>Laborables frente a fines de semana y festivos.</p>
+          </figcaption>
+          <div class="lienzo"></div>
+        </figure>
+
+        <figure class="tarjeta" data-grafico="zonas">
+          <figcaption>
+            <h2>Zonas de recogida destacadas</h2>
+            <p data-subtitulo>Las 15 zonas con mayor valor de la métrica seleccionada.</p>
+          </figcaption>
+          <div class="lienzo alto"></div>
+        </figure>
+
+        <figure class="tarjeta" data-grafico="rutas">
+          <figcaption>
+            <h2>Rutas más frecuentes</h2>
+            <p data-subtitulo>Pares origen → destino con más viajes por día en el filtro actual.</p>
+          </figcaption>
+          <div class="lienzo alto"></div>
+        </figure>
+
+        <figure class="tarjeta ancho-completo" data-grafico="aeropuertos">
+          <figcaption>
+            <h2>Aeropuertos</h2>
+            <p data-subtitulo>Viajes que salen de o llegan a JFK, LaGuardia y Newark.</p>
+          </figcaption>
+          <div class="tabla-envoltura" data-tabla-fija></div>
+        </figure>
+      </div>
+    </section>
+
+    <!-- ================================================================ -->
+    <section id="panel-integridad" role="tabpanel" aria-labelledby="tab-integridad" hidden>
+      <div class="kpis" id="kpis-integridad"></div>
+      <aside class="lectura" data-lectura="integridad" hidden></aside>
+
+      <div class="rejilla">
+        <figure class="tarjeta" data-grafico="reglas-casos">
+          <figcaption>
+            <h2>Casos por regla</h2>
+            <p>Viajes de la base analítica marcados por cada regla (un viaje puede tener varias marcas).</p>
+          </figcaption>
+          <div class="lienzo"></div>
+        </figure>
+
+        <figure class="tarjeta" data-grafico="reglas-impacto">
+          <figcaption>
+            <h2>Monto involucrado por regla</h2>
+            <p>Estimación en dólares según el método de cada regla. Los montos implausibles no se suman.</p>
+          </figcaption>
+          <div class="lienzo"></div>
+        </figure>
+
+        <figure class="tarjeta" data-grafico="proveedores">
+          <figcaption>
+            <h2>Tasa de casos por proveedor tecnológico</h2>
+            <p>Casos por cada 10,000 viajes de cada proveedor. Diferencias grandes apuntan a fallas de captura del equipo, no del conductor.</p>
+          </figcaption>
+          <div class="lienzo alto"></div>
+        </figure>
+
+        <figure class="tarjeta" data-grafico="dispersion">
+          <figcaption>
+            <h2>Tarifa frente a distancia (tarifa estándar)</h2>
+            <p>Muestra de 5,000 viajes sin marca y los casos de las reglas de tarifario. La línea es el mínimo que el taxímetro puede cobrar.</p>
+          </figcaption>
+          <div class="lienzo alto"></div>
+        </figure>
+
+        <figure class="tarjeta ancho-completo" data-grafico="casos">
+          <figcaption>
+            <h2>Casos para revisión</h2>
+            <p>Los 60 casos de mayor impacto de cada regla.</p>
+          </figcaption>
+          <div class="barra-herramientas">
+            <label class="campo">Regla <select id="filtro-regla"></select></label>
+            <button type="button" class="boton" id="descargar-casos">Descargar CSV</button>
+          </div>
+          <div class="tabla-envoltura" data-tabla-fija></div>
+        </figure>
+
+        <figure class="tarjeta ancho-completo" data-grafico="definiciones">
+          <figcaption>
+            <h2>Qué detecta cada regla</h2>
+          </figcaption>
+          <div class="tabla-envoltura" data-tabla-fija></div>
+        </figure>
+      </div>
+    </section>
+
+    <!-- ================================================================ -->
+    <section id="panel-calidad" role="tabpanel" aria-labelledby="tab-calidad" hidden>
+      <div class="kpis" id="kpis-calidad"></div>
+      <aside class="lectura" data-lectura="calidad" hidden></aside>
+
+      <div class="rejilla">
+        <figure class="tarjeta" data-grafico="embudo">
+          <figcaption>
+            <h2>De registros crudos a base analítica</h2>
+            <p>Registros descontados por cada regla de exclusión, aplicadas en orden.</p>
+          </figcaption>
+          <div class="lienzo"></div>
+        </figure>
+
+        <figure class="tarjeta" data-grafico="imputacion">
+          <figcaption>
+            <h2>Imputación de la distancia faltante</h2>
+            <p data-subtitulo>Error absoluto medio al estimar distancias conocidas que se ocultaron a propósito.</p>
+          </figcaption>
+          <div class="lienzo"></div>
+        </figure>
+
+        <figure class="tarjeta ancho-completo" data-grafico="reglas-calidad">
+          <figcaption>
+            <h2>Reglas de calidad y tratamiento</h2>
+            <p>El tratamiento se decide por métrica: un viaje con la hora de llegada corrupta sigue contando como demanda, pero no entra al cálculo de duración ni de velocidad.</p>
+          </figcaption>
+          <div class="tabla-envoltura" data-tabla-fija></div>
+        </figure>
+      </div>
+    </section>
+
+    <!-- ================================================================ -->
+    <section id="panel-metodologia" role="tabpanel" aria-labelledby="tab-metodologia" hidden>
+      <article class="texto">
+        <h2>Pregunta de negocio</h2>
+        <p>El tablero está pensado para dos usuarios: el equipo de operaciones de una flota, que necesita saber dónde y cuándo ubicar vehículos, y un área de fiscalización, que necesita priorizar qué viajes revisar. Las tres pestañas responden a tres preguntas:</p>
+        <ol>
+          <li><strong>Demanda y operación.</strong> ¿En qué zonas, días y horas se concentran los viajes y cuánto ingreso genera cada hora de servicio?</li>
+          <li><strong>Integridad tarifaria.</strong> ¿Qué viajes no son consistentes con el tarifario, con su ruta o con sus propios componentes, y cuánto dinero representan?</li>
+          <li><strong>Calidad de datos.</strong> ¿Qué problemas tienen los registros y qué se hizo con cada uno?</li>
+        </ol>
+
+        <h2>Definiciones</h2>
+        <dl class="definiciones">
+          <dt>Base analítica</dt>
+          <dd>Viajes que quedan tras excluir cargos anulados, duplicados, duraciones ≤ 0 y viajes no realizados probables (<span data-kpi="viajes_base">—</span> viajes).</dd>
+          <dt>Ingreso del servicio</dt>
+          <dd>Tarifa + recargos + propina. Excluye peajes, el impuesto MTA y el recargo de mejora, que se trasladan a terceros. Las propinas en efectivo no quedan registradas en la fuente.</dd>
+          <dt>Ingreso por hora de servicio</dt>
+          <dd>Ingreso dividido por las horas con pasajero a bordo, solo en viajes con duración y velocidad plausibles. Mide la productividad de la hora ocupada, no de la jornada completa.</dd>
+          <dt>Velocidad media</dt>
+          <dd>Millas totales divididas por horas totales (no el promedio de velocidades individuales, que sobrepondera los viajes cortos).</dd>
+          <dt>Tipo de día</dt>
+          <dd>Laborable (lunes a viernes) o fin de semana y festivo. Los festivos del periodo son el 2 de enero (Año Nuevo observado) y el 16 de enero (Martin Luther King Jr.).</dd>
+        </dl>
+
+        <h2>Qué cambió respecto al proyecto del curso</h2>
+        <p>El proyecto parte del trabajo integrador de Minería de Datos. Se conservaron las decisiones de limpieza con evidencia y se retiraron las técnicas que no aportaban a una decisión de negocio sobre este dataset.</p>
+        <div class="tabla-envoltura">
+          <table>
+            <thead><tr><th scope="col">Componente del curso</th><th scope="col">Decisión</th><th scope="col">Motivo</th></tr></thead>
+            <tbody>
+              <tr><td>Limpieza y reporte de calidad</td><td>Se conserva y amplía</td><td>Se agregan reglas de dominio: velocidad imposible, medidor sin cerrar, viajes no realizados, conciliación del total y tratamiento por métrica.</td></tr>
+              <tr><td>“Duplicados lógicos” (4,544)</td><td>Se reinterpretan</td><td>Son pares cargo + reverso que suman $0 (anulaciones), no errores de captura. Se excluyen ambas filas y se reporta el monto reversado.</td></tr>
+              <tr><td>Reglas de asociación (Apriori)</td><td>Se retiran</td><td>Las reglas más fuertes (tarifa ↔ distancia) son casi una definición del tarifario, y Manhattan aparece en el 95% de los viajes. El patrón útil se lee mejor en el mapa de calor día × hora.</td></tr>
+              <tr><td>PCA</td><td>Se retira</td><td>No comprime (las variables aportan señal casi independiente). Su único hallazgo, que el total es la suma de sus componentes, pasa a ser una regla de conciliación.</td></tr>
+              <tr><td>Z-score e IQR global</td><td>Se retiran</td><td>Con sesgo extremo, Z-score casi no detecta nada y el IQR global marca el 21% de los viajes, incluidos los trayectos al aeropuerto. Ningún umbral estadístico distingue un viaje largo de un error.</td></tr>
+              <tr><td>Isolation Forest y LOF</td><td>Se retiran</td><td>Isolation Forest repetía el 93% de lo que marcaba IQR y LOF tuvo un recall de 0.23. Se reemplazan por reglas del tarifario, validadas con los propios datos, y por una regla contextual robusta por ruta.</td></tr>
+              <tr><td>Anomalías sintéticas</td><td>Se retiran</td><td>Multiplicar valores por 15 a 50 genera casos triviales de detectar; no dice nada sobre las anomalías reales.</td></tr>
+              <tr><td>Imputación sobre faltantes artificiales</td><td>Se reemplaza</td><td>La duración nunca falta (se calcula con las marcas de tiempo). La comparación de métodos se traslada a un faltante real: la distancia de los viajes taximetrados que quedó en 0.</td></tr>
+              <tr><td>Categoría explícita para zonas 264 y 265</td><td>Se conserva</td><td>Eliminar estos viajes borraría la movilidad hacia fuera de la ciudad.</td></tr>
+              <tr><td>Reflexión ética</td><td>Se integra</td><td>Cada regla documenta su tratamiento y su justificación en la pestaña de calidad; las marcas de auditoría se presentan como candidatas a revisión, no como fraude probado.</td></tr>
+            </tbody>
+          </table>
+        </div>
+
+        <h2>Tarifario de referencia (2017)</h2>
+        <p>Tarifa estándar: banderazo de $2.50 y $0.50 por cada 1/5 de milla por encima de 12 mph, o $0.50 por cada 60 segundos en tráfico lento o detenido; tarifa plana de $52 entre Manhattan y JFK; recargo de $17.50 para Newark (NYC Taxi &amp; Limousine Commission, s. f.-b). Como el taxímetro cobra por distancia o por tiempo, pero no por ambos a la vez, una tarifa estándar queda acotada entre <code>2.50 + 2.50 × millas</code> y <code>2.50 + 2.50 × millas + 0.50 × minutos</code>. En los datos, el 99.99% de los viajes estándar con duración plausible cae dentro de esa banda con una holgura de $1, lo que valida la regla antes de usarla para auditar.</p>
+        <p>La regla de tarifa suburbana replica un caso real: en 2010 la TLC encontró, con los datos GPS de los taxímetros, 1.8 millones de viajes dentro de la ciudad cobrados con la tarifa suburbana, que es el doble de la estándar (NBC News, 2010).</p>
+
+        <h2>Limitaciones</h2>
+        <ul>
+          <li>Un solo mes de datos: no permite medir estacionalidad anual ni pronosticar más allá de patrones semanales.</li>
+          <li>El esquema de 2017 no trae coordenadas, solo zonas; las distancias por ruta son aproximaciones por par de zonas.</li>
+          <li>Las marcas de auditoría identifican inconsistencias, no intención. Una tarifa por debajo del mínimo puede deberse a una distancia mal registrada y un desvío de ruta puede responder al tráfico o a un recorrido alternativo habitual (algunas rutas tienen distribuciones de distancia con dos modas).</li>
+          <li>El ingreso de los viajes en efectivo está subestimado porque la fuente no registra esas propinas.</li>
+        </ul>
+
+        <h2>Reproducir</h2>
+        <pre><code>uv sync
+uv run nyc-taxi-ops todo   # descarga, procesa y regenera docs/data</code></pre>
+
+        <h2>Referencias</h2>
+        <ul class="referencias">
+          <li>NBC News. (2010, marzo). <em>NYC cabbies ripped off passengers, agency says</em>. <a href="https://www.nbcnews.com/news/amp/wbna35845465">https://www.nbcnews.com/news/amp/wbna35845465</a></li>
+          <li>NYC Taxi &amp; Limousine Commission. (s. f.-a). <em>Data dictionary – Yellow taxi trip records</em>. <a href="https://www.nyc.gov/assets/tlc/downloads/pdf/data_dictionary_trip_records_yellow.pdf">https://www.nyc.gov/assets/tlc/downloads/pdf/data_dictionary_trip_records_yellow.pdf</a></li>
+          <li>NYC Taxi &amp; Limousine Commission. (s. f.-b). <em>Taxi information for yellow cabs: Metered fare information</em>. <a href="https://www.nyc.gov/assets/tlc/downloads/pdf/taxi_information.pdf">https://www.nyc.gov/assets/tlc/downloads/pdf/taxi_information.pdf</a></li>
+          <li>NYC Taxi &amp; Limousine Commission. (s. f.-c). <em>TLC trip record data</em>. <a href="https://www.nyc.gov/site/tlc/about/tlc-trip-record-data.page">https://www.nyc.gov/site/tlc/about/tlc-trip-record-data.page</a></li>
+        </ul>
+      </article>
+    </section>
+  </main>
+
+  <footer class="pie contenedor">
+    <p>Datos: NYC Taxi &amp; Limousine Commission, enero de 2017. Generado el <span data-generado>—</span>. Proyecto de <a href="https://juanhv24.github.io">Juan Hernández Vargas</a>.</p>
+  </footer>
+
+  <div class="tooltip-tabla" hidden></div>
+</body>
+</html>
